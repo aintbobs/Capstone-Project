@@ -22,16 +22,14 @@ The goal is to improve efficiency, reduce human effort, and support sustainable 
 
 ## 🖼️ Project Previews
 ### Block Diagram
-![Block Diagram](docs/images/block_diagram.png)
+![Block Diagram](Block_Diagram.png)
 
 ### Flowchart
-![Flowchart](docs/images/flowchart.png)
+![Flowchart](Flow_Chart.png)
 
-### 🔌 Circuit Schematic
-![Schematic](hardware/schematic/briquette_schematic.png)
 
 ### 🏗️ Prototype 3D Design (SketchUp)
-![3D Design](docs/images/sketchup.png)
+![3D Design](Prototype)
 
 ### 📸 Actual Prototype
 ![Prototype Front](docs/images/prototype_front.jpg)  
