@@ -1,40 +1,61 @@
-# Capstone Project – MCU-Based Charcoal Briquette Machine
+# 🔥 Capstone Project – MCU-Based Charcoal Briquette Machine
 
 ## 📖 Overview
-This project is our **Capstone Project** for BS Computer Engineering.  
-We developed an **MCU-Based Charcoal Briquette Machine** that automates the process of **grinding, mixing, compressing, and forming charcoal briquettes**.  
-The goal is to improve efficiency, reduce human effort, and support sustainable fuel alternatives.
+This project was developed as our **Capstone Project** in BS Computer Engineering.  
+We designed and built an **MCU-Based Charcoal Briquette Machine** that automates the process of **grinding, mixing, compressing, and forming charcoal briquettes**.  
+
+The system reduces manual labor, improves efficiency, and supports the use of **sustainable fuel alternatives** for communities.
+
+---
 
 ## ✨ Key Features
-- Automated **charcoal feeding, mixing, and compression**
-- **Load cell** integration for real-time weight monitoring
-- **Ultrasonic sensors** for starch and water level detection
-- **LCD I2C display** for system feedback
-- **Servo motor & linear actuator** for material control
-- **Relays** for controlling water pump and DC motor
-- Safety indicators: LEDs + buzzer
+- 🔄 Automated **charcoal feeding, grinding, mixing, and compression**
+- ⚖️ **Load cell integration** (real-time weight monitoring)
+- 📡 **Ultrasonic sensors** for starch & water level detection
+- 🖥️ **LCD I2C display** for live system feedback
+- 🎛️ **Servo motor & linear actuator** for controlled dispensing
+- ⚡ **Relays** for pump and DC motor control
+- 🚨 **Safety indicators**: LEDs & buzzer alerts
+
+---
 
 ## ⚙️ Hardware & Software
-- **MCU:** Arduino Mega (ATmega2560)
-- **Sensors & Actuators:** IR sensor, servo motor, stepper motors, load cell (HX711), linear actuator, ultrasonic sensors, relays, LCD I2C
-- **Programming Language:** C/C++ (Arduino IDE)
-- **Design Tools:** AutoCAD (2D design), SketchUp (3D mechanical design)
+- **Microcontroller:** Arduino Mega (ATmega2560)  
+- **Sensors & Actuators:** IR sensor, servo motor, stepper motors, HX711 load cell, linear actuator, ultrasonic sensors, relays, LCD I2C  
+- **Programming Language:** C/C++ (Arduino IDE)  
+- **Design Tools:** AutoCAD (2D design), SketchUp (3D design)  
 
-## 🖼️ Project Previews
-### Block Diagram
+---
+
+## 🖼️ System Diagrams
+### 🔲 Block Diagram
 ![Block Diagram](Block_Diagram.png)
 
-### Flowchart
+### 🔄 Flowchart
 ![Flowchart](Flow_Chart.png)
 
+---
 
-### 🏗️ Prototype 3D Design (SketchUp)
-[3D Design](Prototype)
+## 🏗️ Prototype & Designs
+- 📐 **3D Model (SketchUp):**  
+  ![Prototype 3D Design](Prototype)
 
-### 📸 Actual Prototype
-[Prototype](Actual_Prototype)
+- ⚙️ **Actual Prototype:**  
+  ![Prototype](Actual_Prototype)
 
-## 🚀 C/C++ Code
-[Final Code](C++_Capstone_Code.docx)
+---
 
+## 💻 Firmware
+The full firmware is available in the [`/firmware`](C++_Capstone_Code.docx) folder.  
+Here’s a snippet showing the **IR sensor + servo feeder logic**:
 
+```cpp
+// IR Sensor + Servo Feeder
+int sensorValue = digitalRead(IR_SENSOR);
+
+if (sensorValue == LOW) { // Object detected
+    feeder.write(0);      // Open feeder
+    delay(500);
+    feeder.write(90);     // Return to idle
+    delay(500);
+}
