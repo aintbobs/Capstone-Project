@@ -1,0 +1,416 @@
+finals 7.0 
+
+#include <LiquidCrystal_I2C.h>
+#include <HX711.h>
+#include <Servo.h>
+
+const int irSensorPin = 45; // Pin for IR sensor
+const int servoPin = 44;    // Pin for servo motor
+Servo myServo;
+int sensorValue = 0;
+
+// Define constants
+const int lcdAddr = 0x27;
+const int lcdSda = A4;
+const int lcdScl = A5;
+const int stepPin1 = 2;
+const int dirPin1 = 3;
+const int stepPin2 = 4;
+const int dirPin2 = 5;
+const int stepPin3 = 6;
+const int dirPin3 = 7;
+const int LOADCELL_DOUT = 27;
+const int LOADCELL_SCK = 28;
+const int in1 = 30;
+const int in2 = 31;
+const int en = 29;
+const int ledRedPin = 25;
+const int ledGreenPin = 22;
+const int ledWhitePin = 23;
+const int ledBluePin = 24;
+const int buzzerPin = 26;
+const int TRIG_PIN1 = 11; // Ultrasonic sensor for water
+const int ECHO_PIN1 = 12; // Ultrasonic sensor for water
+const int TRIG_PIN2 = 8;  // Ultrasonic sensor for starch
+const int ECHO_PIN2 = 9;  // Ultrasonic sensor for starch
+const int RELAY_PIN1 = 32; // water pump
+const int RELAY_PIN2 = 33; // dc motor
+const float calibrationFactor = 0.000001;
+const float offset = 0.02;
+const float boxWeight = 0.63;
+
+
+// Initialize objects
+LiquidCrystal_I2C lcd(0x27, 16, 3);
+HX711 scale;
+
+bool machineOpen = false;
+bool stepperRunning1 = false;
+bool stepperRunning2 = false;
+bool stepperRunning3 = false;
+bool actuatorExtended = false;
+bool steppercounterRunning2 = false;
+unsigned long actuatorExtendTime = 0;
+long duration_us;
+int distance_cm;
+
+void setup() {
+  Serial.begin(9600);
+
+  // Servo setup
+  myServo.attach(servoPin);
+  myServo.write(90); // Start at 0 degrees
+
+  // IR sensor setup
+  pinMode(irSensorPin, INPUT);
+
+
+
+  pinMode(stepPin1, OUTPUT);
+  pinMode(dirPin1, OUTPUT);
+  pinMode(stepPin2, OUTPUT);
+  pinMode(dirPin2, OUTPUT);
+  pinMode(stepPin3, OUTPUT);
+  pinMode(dirPin3, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(en, OUTPUT);
+  pinMode(ledRedPin, OUTPUT);
+  pinMode(ledGreenPin, OUTPUT);
+  pinMode(ledWhitePin, OUTPUT);
+  pinMode(ledBluePin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(TRIG_PIN1, OUTPUT);
+  pinMode(ECHO_PIN1, INPUT);
+  pinMode(RELAY_PIN1, OUTPUT);
+  pinMode(RELAY_PIN2, OUTPUT);
+
+  digitalWrite(ledGreenPin, HIGH); // Power on indicator
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 1);
+  lcd.print("Initializing System.");
+  delay(2000);
+  lcd.setCursor(0, 1);
+  lcd.print("WELCOME USER!                ");
+  delay(2000);
+  lcd.clear();
+
+  Serial.begin(9600);
+  scale.begin(LOADCELL_DOUT, LOADCELL_SCK);
+  scale.set_gain(128);
+  scale.tare();
+
+
+  stepperRunning1 = true; // Start stepper 1
+  
+}
+
+void loop() {
+  // IR Sensor Logic
+  sensorValue = digitalRead(irSensorPin);
+    digitalWrite(TRIG_PIN1, LOW);
+    delayMicroseconds(2);
+    digitalWrite(TRIG_PIN1, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN1, LOW);
+    duration_us = pulseIn(ECHO_PIN1, HIGH);
+    distance_cm = duration_us * 0.034 / 2;
+
+  if (sensorValue == LOW) { // Object detected (active-low)
+    Serial.println("Object detected! Moving servo to 90 degrees.");
+    myServo.write(0); // Rotate servo
+    delay(500);
+
+    Serial.println("Returning servo to 0 degrees.");
+    myServo.write(90);
+    delay(500);
+  }
+  
+
+  if (stepperRunning1) {
+    rotateClockwise1(360);
+    delay(1);
+ 
+}
+  if (steppercounterRunning2) {
+    rotatecounterClockwise4();
+    delay(1);
+  }
+  if (stepperRunning2) {
+    rotateClockwise2(360);
+    delay(1);
+  }
+  if (stepperRunning3) {
+    rotateClockwise3(360);
+    delay(1);
+  }
+  stopStepper2();
+  stopStepper3();
+  stopStepper1();
+  
+
+
+  long reading = scale.read();
+  float weight = (reading * calibrationFactor) - offset;
+  float netWeight = weight - boxWeight;
+
+  if (netWeight <= 0) {
+    netWeight = 0;
+    digitalWrite(ledRedPin, HIGH);
+    //tone(buzzerPin, 1000);
+    
+
+  } else {
+    digitalWrite(ledRedPin, LOW);
+    noTone(buzzerPin);
+    stepperRunning1 = true;
+    
+  }
+
+  lcd.setCursor(0, 1);
+  lcd.println("Grinding                                                     ");
+  lcd.setCursor(0, 2);
+  lcd.print("Weight: ");
+  lcd.print(netWeight);
+  lcd.print("kg   ");
+  lcd.setCursor(0, 3);
+  lcd.print("of Charcoal");
+
+  if (netWeight > 1.00) {
+    lcd.clear();
+    lcd.setCursor(0, 1);
+    lcd.println("Pouring                                                      ");
+    lcd.setCursor(0, 2);
+    lcd.print("Weight: ");
+    lcd.print(netWeight);
+    lcd.print("kg");
+    lcd.setCursor(0, 3);
+    lcd.print("of Charcoal");
+    }
+
+  if (actuatorExtended && millis() - actuatorExtendTime > 6000) {
+    lcd.clear();
+    lcd.setCursor(0, 1);
+    lcd.println("Retracting                                                   ");
+    lcd.setCursor(0, 2);
+    lcd.print("let me cook");
+    }
+
+    
+  if (netWeight >= 1.00 && stepperRunning1) {
+    stopStepper1();
+    linearActuatorExtend();
+    actuatorExtendTime = millis();
+    actuatorExtended = true;
+    stepperRunning1 = false;
+    noTone(buzzerPin);
+    
+
+  }
+
+  if (actuatorExtended && millis() - actuatorExtendTime >= 6000) {
+    linearActuatorRetract();
+    stopStepper1();
+    actuatorExtended = false;
+    clearLine(1);
+    lcd.setCursor(0, 1);
+    lcd.println("Dispensing Starch                                           ");
+    clearLine(2);
+    lcd.setCursor(0, 2);
+    lcd.println("Dispensing Water      ");
+    digitalWrite(RELAY_PIN1, HIGH);
+    delayMicroseconds(5000);
+    //digitalWrite(RELAY_PIN2, HIGH);
+    //delayMicroseconds(10000);
+    digitalWrite(RELAY_PIN1, LOW); 
+    {
+    if (distance_cm > 20) {
+    clearLine(1);
+    lcd.setCursor(0, 1);
+    lcd.println("refill starch                                           ");
+    clearLine(2);
+    lcd.setCursor(0, 2);
+    lcd.println("refill Water      ");
+    } else {
+      clearLine(1);
+    lcd.setCursor(0, 1);
+    lcd.println("Dispensing Starch                                           ");
+    clearLine(2);
+    lcd.setCursor(0, 2);
+    lcd.println("Dispensing Water      ");
+    
+    }
+
+    if (distance_cm > 20) {
+      digitalWrite(RELAY_PIN1, LOW);
+      digitalWrite(RELAY_PIN2, LOW);
+      digitalWrite(ledBluePin, HIGH);
+      //tone(buzzerPin, 1000);
+      stepperRunning2 = false;
+      stepperRunning3 = false;
+      steppercounterRunning2 = false;
+    } else {
+      digitalWrite(RELAY_PIN1, HIGH);
+      delay(2000);
+      digitalWrite(RELAY_PIN2, HIGH);
+      delay(2000);
+      digitalWrite(ledBluePin, LOW);
+      noTone(buzzerPin);
+      steppercounterRunning2 = true;
+      stepperRunning2 = true;
+      stepperRunning3 = true;
+      stepperRunning1 = false;
+      stopStepper1();
+      
+    }
+  }
+
+    stepperRunning1 = false;
+    stopStepper1();
+    
+  
+  }
+  
+
+  
+  //if (digitalRead(RELAY_PIN2) == HIGH) {
+    //digitalWrite(TRIG_PIN2, HIGH);
+    //delayMicroseconds(2);
+    //digitalWrite(TRIG_PIN2, LOW);
+    //long duration_us = pulseIn(ECHO_PIN2, HIGH);
+    //float distance_cm = duration_us * 0.034 / 2;
+    //stopStepper1();
+    
+
+    //if (distance_cm > 11) {
+  //    digitalWrite(RELAY_PIN2, LOW);
+   //   digitalWrite(ledWhitePin, HIGH);
+      //tone(buzzerPin, 1000);
+   //   stepperRunning2 = false;
+   //   stepperRunning3 = false;
+   //   steppercounterRunning2 = false;
+   // } else {
+   //   digitalWrite(ledBluePin, LOW);
+   //   noTone(buzzerPin);
+    //  stepperRunning3 = true;
+   //   stepperRunning2 = true;
+   //   stopStepper1();
+   // }
+ // }
+
+  Serial.print("distance: ");
+  Serial.print(distance_cm);
+  Serial.println(" cm");
+  delay(1);
+}
+
+void rotateClockwise1(int degrees) {
+  digitalWrite(dirPin1, HIGH);
+  int stepsPerRevolution = 1600;
+  int steps = map(degrees, 0, 360, 0, stepsPerRevolution);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin1, HIGH);
+    delayMicroseconds(200);
+    digitalWrite(stepPin1, LOW);
+    delayMicroseconds(500);
+  }
+}
+void rotateClockwise2(int degrees) {
+lcd.setCursor(0, 1);
+lcd.println("Pls wait.......");
+lcd.setCursor(0, 2);
+lcd.println("nagalolo na....");
+digitalWrite(dirPin2, HIGH);
+int stepsPerRevolution = 3200;
+int steps = map(degrees, 0, 360, 0, stepsPerRevolution);
+for (int i = 0; i < steps; i++) {
+digitalWrite(stepPin2, HIGH);
+delayMicroseconds(200);
+digitalWrite(stepPin2, LOW);
+delayMicroseconds(500);
+stepperRunning1 = false;
+}
+}
+void rotatecounterClockwise4() {
+    digitalWrite(dirPin2, LOW); // Set direction to counterclockwise
+    int stepsPerRevolution = 1600; // Total steps for a full revolution
+    int rotationsPerMinute = 60;  // Example: 60 RPM (Adjust this based on your motor's speed)
+    int totalSteps = stepsPerRevolution * rotationsPerMinute * 1; // Total steps in 5 minutes
+
+    // Calculate delay between steps based on RPM
+    int delayBetweenSteps = (30 * 1000000L) / (stepsPerRevolution * rotationsPerMinute);
+    clearLine(1);
+    lcd.setCursor(0, 1);
+    lcd.println("Pls wait");
+    clearLine(2);
+    lcd.setCursor(0, 2);
+    lcd.println("mixing");
+    for (int i = 0; i < totalSteps; i++) {
+        digitalWrite(stepPin2, HIGH); // Step signal HIGH
+        delayMicroseconds(delayBetweenSteps / 2); // Half-cycle delay
+        digitalWrite(stepPin2, LOW); // Step signal LOW
+        delayMicroseconds(delayBetweenSteps / 2); // Half-cycle delay
+        steppercounterRunning2 = false;
+        digitalWrite(RELAY_PIN1, LOW);
+      digitalWrite(RELAY_PIN2, LOW);
+    }
+}
+void rotateClockwise3(int degrees) {
+digitalWrite(dirPin3, HIGH);
+int stepsPerRevolution = 1600;
+int steps = map(degrees, 0, 360, 0, stepsPerRevolution);
+for (int i = 0; i < steps; i++) {
+digitalWrite(stepPin3, HIGH);
+delayMicroseconds(200);
+digitalWrite(stepPin3, LOW);
+delayMicroseconds(500);
+stepperRunning1 = false;
+    
+}
+}
+
+void linearActuatorExtend() {
+digitalWrite(in1, HIGH);
+digitalWrite(in2, LOW);
+analogWrite(en, 200);
+delay(6000);
+lcd.setCursor(0, 1);
+lcd.println("Pls wait.......");
+lcd.setCursor(0, 2);
+lcd.println("pouring charcoal....");
+}
+
+void linearActuatorRetract() {
+digitalWrite(in1, LOW);
+digitalWrite(in2, HIGH);
+analogWrite(en, 200);
+delay(5000);
+digitalWrite(in1, LOW);
+digitalWrite(in2, LOW);
+analogWrite(en, 0);
+stopStepper1();
+lcd.setCursor(0, 1);
+lcd.println("Pls wait.......");
+lcd.setCursor(0, 2);
+lcd.println("let me cook...");
+}
+
+
+void stopStepper1() {
+digitalWrite(stepPin1, LOW);
+digitalWrite(dirPin1, LOW);
+}
+
+void stopStepper2() {
+digitalWrite(stepPin2, LOW);
+digitalWrite(dirPin2, LOW);
+}
+void stopStepper3() {
+digitalWrite(stepPin3, LOW);
+digitalWrite(dirPin3, LOW);
+}
+void clearLine(int line) {
+  lcd.setCursor(0, line);
+  lcd.print("                    "); // Clear the line (20 characters for a typical LCD)
+}
