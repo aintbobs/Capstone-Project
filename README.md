@@ -32,5 +32,4 @@ The goal is to improve efficiency, reduce human effort, and support sustainable 
 ![3D Design](Prototype)
 
 ### 📸 Actual Prototype
-![Prototype Front](docs/images/prototype_front.jpg)  
-![Prototype Side](docs/images/prototype_side.jpg)
+![Prototype](Actual_Prototype)
