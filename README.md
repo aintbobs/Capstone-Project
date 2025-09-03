@@ -29,12 +29,12 @@ The goal is to improve efficiency, reduce human effort, and support sustainable 
 
 
 ### 🏗️ Prototype 3D Design (SketchUp)
-![3D Design](Prototype)
+[3D Design](Prototype)
 
 ### 📸 Actual Prototype
-![Prototype](Actual_Prototype)
+[Prototype](Actual_Prototype)
 
 ## 🚀 C/C++ Code
-![Final Code](C++_Capstone_Code.docx)
+[Final Code](C++_Capstone_Code.docx)
 
 
