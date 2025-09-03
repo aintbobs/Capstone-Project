@@ -21,6 +21,12 @@ The goal is to improve efficiency, reduce human effort, and support sustainable 
 - **Design Tools:** AutoCAD (2D design), SketchUp (3D mechanical design)
 
 ## 🖼️ Project Previews
+### Block Diagram
+![Block Diagram](docs/images/block_diagram.png)
+
+### Flowchart
+![Flowchart](docs/images/flowchart.png)
+
 ### 🔌 Circuit Schematic
 ![Schematic](hardware/schematic/briquette_schematic.png)
 
