@@ -29,25 +29,29 @@ The system reduces manual labor, improves efficiency, and supports the use of **
 
 ## 🖼️ System Diagrams
 ### 🔲 Block Diagram
-![Block Diagram](Block_Diagram.png)
+🔲[Block Diagram](Block_Diagram.png)
 
 ### 🔄 Flowchart
-![Flowchart](Flow_Chart.png)
+🔄[Flowchart](Flow_Chart.png)
 
 ---
 
 ## 🏗️ Prototype & Designs
 - 📐 **3D Model (SketchUp):**  
-  ![Prototype 3D Design](Prototype)
+  📐[Prototype 3D Design](Prototype)
 
 - ⚙️ **Actual Prototype:**  
-  ![Prototype](Actual_Prototype)
+  ⚙️[Prototype](Actual_Prototype)
 
 ---
 
-## 💻 Firmware
-The full firmware is available in the [`/firmware`](C++_Capstone_Code.docx) folder.  
-Here’s a snippet showing the **IR sensor + servo feeder logic**:
+## 💻 Firmware (Arduino Code)
+The complete firmware is available here:  
+👉 [`/firmware/charcoal_briquette_machine.ino`](Finals_codes1desu)
+
+For documentation purposes, we also included the original Word file:  
+👉 [`C++_Capstone_Code.docx`](C++_Capstone_Code.docx)
+
 
 ```cpp
 // IR Sensor + Servo Feeder
