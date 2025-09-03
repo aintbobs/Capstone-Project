@@ -63,3 +63,8 @@ if (sensorValue == LOW) { // Object detected
     feeder.write(90);     // Return to idle
     delay(500);
 }
+```
+## 📜 License
+This repository is licensed under the **MIT License**.  
+You are free to use, modify, and share this code, but I am not responsible for any issues or damages caused by its use.
+
