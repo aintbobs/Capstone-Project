@@ -33,3 +33,8 @@ The goal is to improve efficiency, reduce human effort, and support sustainable 
 
 ### 📸 Actual Prototype
 ![Prototype](Actual_Prototype)
+
+## 🚀 C/C++ Code
+![Final Code](c++_code_for_capstone)
+
+
